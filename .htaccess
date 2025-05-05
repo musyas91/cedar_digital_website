@@ -1,11 +1,8 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-
-  # If the requested file or directory exists, serve it
+  RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-
-  # Otherwise, serve index.html
-  RewriteRule ^ index.html [L]
+  RewriteRule . /index.html [L]
 </IfModule>
