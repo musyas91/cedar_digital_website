@@ -17,18 +17,99 @@
     <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@100..900&display=swap" rel="stylesheet">
 
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXX"></script>
+    <!--
+      ─────────────────────────────────────────────────────────────────
+      Google Consent Mode v2 — MUST load before any gtag / GTM scripts.
+      Sets all storage to DENIED by default.
+      The CookieConsent system grants access after user accepts.
+      ─────────────────────────────────────────────────────────────────
+    -->
     <script>
-      window.dataLayer = window.dataLayer || []
-      function gtag() { dataLayer.push(arguments) }
-      gtag('js', new Date())
-      gtag('config', 'G-XXXXXXX')
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+
+      // Default: deny all until user consents
+      gtag('consent', 'default', {
+        analytics_storage:  'denied',
+        ad_storage:         'denied',
+        ad_user_data:       'denied',
+        ad_personalization: 'denied',
+        wait_for_update:    2000,   // ms GTM waits for a consent update signal
+      });
+
+      // ⚙️  Replace G-XXXXXXX with your actual GA4 Measurement ID
+      //     This script is loaded conditionally by consentManager.js
+      //     after analytics consent is granted.
+      //     Remove these two lines if you prefer dynamic loading only.
+      // gtag('js', new Date());
+      // gtag('config', 'G-XXXXXXX');
     </script>
 
-    <script type="module" crossorigin src="/assets/index-BF0YYw4q.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DKbB3maz.css">
+    <!--
+      ─────────────────────────────────────────────────────────────────
+      Consent Reapplication — runs BEFORE GTM loads.
+
+      On every page load this script reads cedar_cookie_consent from
+      localStorage and immediately calls gtag('consent', 'update', {...}).
+      Because this runs synchronously between the Consent Mode defaults
+      and the GTM snippet, GTM receives the correct consent state during
+      its own initialization — before gtm.dom / gtm.load fire.
+
+      This fixes the "no consent update event after page refresh" bug.
+      ─────────────────────────────────────────────────────────────────
+    -->
+    <script>
+      (function () {
+        try {
+          var raw = localStorage.getItem('cedar_cookie_consent');
+          if (!raw) return;
+
+          var saved = JSON.parse(raw);
+          if (!saved || !saved.accepted) return;
+
+          // 1. Update Consent Mode v2 BEFORE GTM loads
+          gtag('consent', 'update', {
+            analytics_storage:  saved.analytics ? 'granted' : 'denied',
+            ad_storage:         saved.marketing ? 'granted' : 'denied',
+            ad_user_data:       saved.marketing ? 'granted' : 'denied',
+            ad_personalization: saved.marketing ? 'granted' : 'denied'
+          });
+
+          // 2. Push dataLayer event (acts as a GTM Custom Event trigger)
+          dataLayer.push({
+            event:     'cookie_consent_updated',
+            analytics: saved.analytics,
+            marketing: saved.marketing
+          });
+
+          console.log('[Consent] Loaded from localStorage');
+          console.log('[Consent] Reapplied on page refresh');
+        } catch (e) {
+          // localStorage unavailable (private mode, blocked) — fail silently
+        }
+      })();
+    </script>
+
+    <!-- Google Tag Manager -->
+    <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-XCTH7CR3');
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <script type="module" crossorigin src="/assets/index-NyLKlymQ.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-CERcwG02.css">
   </head>
   <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript>
+    <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-XCTH7CR3"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe>
+    </noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <div id="app"></div>
   </body>
 </html>
